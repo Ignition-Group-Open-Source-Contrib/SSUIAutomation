@@ -1,0 +1,31 @@
+resources:
+- repo: self
+ 
+trigger:
+  - main
+ 
+stages:
+ 
+  - stage: RunTestsPRD
+    displayName: Run Tests on PRD Env
+    variables:
+      - group: 'MarketicAutomation variables-prd'
+    pool:
+      vmImage: 'ubuntu-latest'
+    jobs:
+ 
+    - job: RunningUITestsOnTEST
+      displayName: Running UI Tests on TEST
+      steps:
+      - script: |
+          set -e
+          npm install      
+          npx playwright install
+          npx cross-env NODE_ENV=QA playwright test Main.spec.js --project=chromium || exit 1
+        displayName: 'Run Test cases on TEST'
+        workingDirectory: '$(Build.SourcesDirectory)'
+        failOnStderr: false
+ 
+      - publish: $(System.DefaultWorkingDirectory)/playwright-report-test
+        artifact: playwright-report-test
+        condition: always()

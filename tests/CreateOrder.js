@@ -70,6 +70,7 @@ export class CreateOrder {
     this.orderReferenceField = '#OrderReference'
     this.orderReferenceValue = '//td[contains(text(),"Test Lead Campaign")]/following-sibling::td[1]'
     this.addDeals;
+    this.readBankingData = [];
   }
 
   async StartSelling() {
@@ -205,16 +206,14 @@ export class CreateOrder {
     if (!this.page) {
       throw new Error('Page is not initialized');
     }
-
-    
      
     await this.page.waitForSelector(this.AddBankDeatilsButton)
     await this.page.click(this.AddBankDeatilsButton)
     this.page.waitForTimeout(2000)
 
-    const bankDetials = await this.addDeals.readBankingData();
+    this.readBankingData = await this.addDeals.readBankingData();
 
-    for(const bankdetail of bankDetials) {
+    for(const bankdetail of this.readBankingData) {
       await this.page.fill(this.AccountHolderName,bankdetail.AccountHolderName)
       await this.page.waitForTimeout(1000)
       const bankname = this.page.locator(this.banknameField)
@@ -229,7 +228,7 @@ export class CreateOrder {
       await this.page.waitForTimeout(1000)
       await this.page.click(this.accountNumberField)
       await this.page.waitForTimeout(1000)
-      await this.page.fill(this.accountNumberField, bankdetail.AccountNumber)
+      await this.page.fill(this.accountNumberField, String(bankdetail.AccountNumber))
       await this.page.waitForTimeout(1000)
       const accountType = this.page.locator(this.accountTypes)
       await accountType.click()
@@ -239,7 +238,7 @@ export class CreateOrder {
       const debitdays = this.page.locator(this.debitdays)
       await debitdays.click()
       await this.page.waitForTimeout(1000)
-      await debitdays.selectOption({label:bankdetail.DebitDay})
+      await debitdays.selectOption({label:String(bankdetail.DebitDay)})
       await this.page.waitForTimeout(1000)
       const primaryMSISDN = await this.page.locator(this.PrimaryMsisdnNumberField)
       const primaryMsisdnValue = await primaryMSISDN.inputValue()
