@@ -1,11 +1,29 @@
-import { defineConfig, devices } from '@playwright/test';
-// playwright.config.js
+import { defineConfig } from '@playwright/test';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
+
 export default defineConfig({
-    testDir: './tests', // Folder where your test files will be located
-    timeout: 120000, // Set a global timeout (e.g., 30 seconds)
-    use: {
-      headless: false, // Run tests in headless mode by default
-      browserName: 'chromium', // The default browser for tests
+  testDir: './tests',
+  timeout: 120000,
+  use: {
+    headless: true,
+    browserName: 'chromium',
+    baseURL: process.env.BASE_URL || 'http://t2.silversurfer.ignitiongroup.co.za/',
+  },
+  projects: [
+    {
+      name: 'uat',
+      use: { 
+        baseURL: process.env.UAT_URL,
+      },
     },
-  });
-  
+    {
+      name: 'prod',
+      use: { 
+        baseURL: process.env.PROD_URL,
+      },
+    },
+  ],
+});

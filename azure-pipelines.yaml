@@ -1,31 +1,58 @@
 resources:
 - repo: self
- 
+
 trigger:
-  - main
- 
+- main
+
 stages:
- 
-  - stage: RunTestsPRD
-    displayName: Run Tests on PRD Env
+  - stage: RunTests
+    displayName: Run Tests on All Environments
     variables:
-      - group: 'MarketicAutomation variables-prd'
+      - group: 'MarketicAutomation variables-prd'  # Contains PROD_URL
+      - group: 'MarketicAutomation variables-uat'  # Contains UAT_URL
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
- 
-    - job: RunningUITestsOnTEST
-      displayName: Running UI Tests on TEST
+    - job: RunAllTests
+      displayName: 'Run Tests in Parallel'
+      strategy:
+        matrix:
+          uat:
+            ENV_NAME: 'UAT'
+            TEST_SCRIPT: 'test:uat'
+            BASE_URL: $(UAT_URL)
+            ARTIFACT_NAME: 'playwright-report-uat'
+          prod:
+            ENV_NAME: 'PROD'
+            TEST_SCRIPT: 'test:prod'
+            BASE_URL: $(PROD_URL)
+            ARTIFACT_NAME: 'playwright-report-prod'
+        maxParallel: 2
       steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '16.x'
+        displayName: 'Install Node.js'
+
       - script: |
           set -e
-          npm install      
+          npm install
           npx playwright install
-          npx cross-env NODE_ENV=QA playwright test Main.spec.js --project=chromium || exit 1
-        displayName: 'Run Test cases on TEST'
+          npx playwright install-deps
+        displayName: 'Install dependencies'
         workingDirectory: '$(Build.SourcesDirectory)'
+
+      - script: |
+          set -e
+          echo "Running tests for $(ENV_NAME) environment"
+          echo "Base URL: $(BASE_URL)"
+          npm run $(TEST_SCRIPT) || exit 1
+        displayName: 'Run $(ENV_NAME) Tests'
+        workingDirectory: '$(Build.SourcesDirectory)'
+        env:
+          BASE_URL: $(BASE_URL)
         failOnStderr: false
- 
-      - publish: $(System.DefaultWorkingDirectory)/playwright-report-test
-        artifact: playwright-report-test
+
+      - publish: $(System.DefaultWorkingDirectory)/playwright-report
+        artifact: $(ARTIFACT_NAME)
         condition: always()

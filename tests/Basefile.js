@@ -6,8 +6,8 @@ export class Basefile {  // Class name in PascalCase
   constructor() {
     this.browser = null;
     this.page = null;
-    this.TestURL = 'http://t2.silversurfer.ignitiongroup.co.za/Auth'
-    this.ProdURL = 'https://silversurfer.ignitiongroup.co.za/Auth'
+    // this.TestURL = 'http://t2.silversurfer.ignitiongroup.co.za/Auth'
+    // this.ProdURL = 'https://silversurfer.ignitiongroup.co.za/Auth'
     this.loginFormUserName = '#txtUsername';
     this.loginFormPassword = '#txtPassword';
     this.signInButton = '#btnSignIn';
@@ -27,7 +27,7 @@ export class Basefile {  // Class name in PascalCase
   // Method to perform login
   async login() {
     console.log('Logging in...');
-    await this.page.goto(this.TestURL);
+    await this.page.goto('/AUTH');
     await this.page.fill(this.loginFormUserName, this.loginUsername);
     await this.page.fill(this.loginFormPassword, this.password);
     await this.page.click(this.signInButton);
