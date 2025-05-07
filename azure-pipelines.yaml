@@ -45,12 +45,12 @@ stages:
       - script: |
           set -e
           echo "Running tests for $(ENV_NAME) environment"
-          # echo "Base URL: $(BASE_URL)"
+          echo "Base URL: $(BASE_URL)"
           npm run $(TEST_SCRIPT) || exit 1
         displayName: 'Run $(ENV_NAME) Tests'
         workingDirectory: '$(Build.SourcesDirectory)'
-        # env:
-        #   BASE_URL: $(BASE_URL)
+        env:
+          BASE_URL: $(BASE_URL)
         failOnStderr: false
 
       - publish: $(System.DefaultWorkingDirectory)/playwright-report
