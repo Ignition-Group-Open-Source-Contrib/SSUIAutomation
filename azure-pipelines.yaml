@@ -9,7 +9,7 @@ stages:
     displayName: Run Tests on All Environments
     variables:
       - group: 'MarketicAutomation variables-prd'  # Contains PROD_URL
-      - group: 'MarketicAutomation variables-uat'  # Contains UAT_URL
+      - group: 'MarketicAutomation variables-test'  # Contains UAT_URL
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
@@ -20,12 +20,12 @@ stages:
           uat:
             ENV_NAME: 'UAT'
             TEST_SCRIPT: 'test:uat'
-            BASE_URL: $(UAT_URL)
+            # BASE_URL: $(UAT_URL)
             ARTIFACT_NAME: 'playwright-report-uat'
           prod:
             ENV_NAME: 'PROD'
             TEST_SCRIPT: 'test:prod'
-            BASE_URL: $(PROD_URL)
+            # BASE_URL: $(PROD_URL)
             ARTIFACT_NAME: 'playwright-report-prod'
         maxParallel: 2
       steps:
@@ -45,12 +45,12 @@ stages:
       - script: |
           set -e
           echo "Running tests for $(ENV_NAME) environment"
-          echo "Base URL: $(BASE_URL)"
+          # echo "Base URL: $(BASE_URL)"
           npm run $(TEST_SCRIPT) || exit 1
         displayName: 'Run $(ENV_NAME) Tests'
         workingDirectory: '$(Build.SourcesDirectory)'
-        env:
-          BASE_URL: $(BASE_URL)
+        # env:
+        #   BASE_URL: $(BASE_URL)
         failOnStderr: false
 
       - publish: $(System.DefaultWorkingDirectory)/playwright-report
