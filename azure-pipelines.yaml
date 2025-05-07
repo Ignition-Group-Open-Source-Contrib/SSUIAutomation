@@ -22,11 +22,11 @@ stages:
             TEST_SCRIPT: 'test:uat'
             # BASE_URL: $(UAT_URL)
             ARTIFACT_NAME: 'playwright-report-uat'
-          prod:
-            ENV_NAME: 'PROD'
-            TEST_SCRIPT: 'test:prod'
-            # BASE_URL: $(PROD_URL)
-            ARTIFACT_NAME: 'playwright-report-prod'
+          # prod:
+          #   ENV_NAME: 'PROD'
+          #   TEST_SCRIPT: 'test:prod'
+          #   # BASE_URL: $(PROD_URL)
+          #   ARTIFACT_NAME: 'playwright-report-prod'
         maxParallel: 2
       steps:
       - task: NodeTool@0
