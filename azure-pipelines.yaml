@@ -7,9 +7,9 @@ trigger:
 stages:
   - stage: RunTests
     displayName: Run Tests on All Environments
-    variables:
-      - group: 'MarketicAutomation variables-prd'  # Contains PROD_URL
-      - group: 'MarketicAutomation variables-test'  # Contains UAT_URL
+    # variables:
+    #   - group: 'MarketicAutomation variables-prd'  # Contains PROD_URL
+    #   - group: 'MarketicAutomation variables-test'  # Contains UAT_URL
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
@@ -20,7 +20,7 @@ stages:
           uat:
             ENV_NAME: 'UAT'
             TEST_SCRIPT: 'test:uat'
-            # BASE_URL: $(UAT_URL)
+            BASE_URL: 'http://t2.silversurfer.ignitiongroup.co.za/Auth'
             ARTIFACT_NAME: 'playwright-report-uat'
           # prod:
           #   ENV_NAME: 'PROD'
