@@ -13,7 +13,7 @@ export default defineConfig({
       use: {
         headless: true, // Or false for debugging
         browserName: 'chromium',
-        baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://t2.silversurfer.ignitiongroup.co.za',
+        baseURL: process.env.UAT_URL || 'http://t2.silversurfer.ignitiongroup.co.za',
       },
     },
     {
