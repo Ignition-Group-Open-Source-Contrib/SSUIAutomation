@@ -7,6 +7,7 @@ console.log("Playwright config loaded!");
 export default defineConfig({
   testDir: './tests',
   timeout: 120000,
+  reporter: [['html', { outputFolder: 'playwright-report' }]],
   projects: [
     {
       name: 'uat', // Must match --project=uat
