@@ -14,14 +14,14 @@ stages:
       displayName: 'Run Tests in Parallel'
       strategy:
         matrix:
-          # uat:
-          #   ENV_NAME: 'uat'
-          #   TEST_SCRIPT: 'test:uat'
-          #   ARTIFACT_NAME: 'playwright-report-uat'
-          prod:
-            ENV_NAME: 'PROD'
-            TEST_SCRIPT: 'test:prod'
-            ARTIFACT_NAME: 'playwright-report-prod'
+          uat:
+            ENV_NAME: 'uat'
+            TEST_SCRIPT: 'test:uat'
+            ARTIFACT_NAME: 'playwright-report-uat'
+          # prod:
+          #   ENV_NAME: 'PROD'
+          #   TEST_SCRIPT: 'test:prod'
+          #   ARTIFACT_NAME: 'playwright-report-prod'
         maxParallel: 2
       steps:
       - task: NodeTool@0
