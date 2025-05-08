@@ -4,10 +4,10 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test:uat": "cross-env BASE_URL=$UAT_URL playwright test --project=uat",
-    "test:prod": "cross-env BASE_URL=$PROD_URL playwright test --project=prod",
-    "test:all": "npm run test:uat && npm run test:prod"
-  },
+  "test:uat": "playwright test --project=uat",
+  "test:prod": "playwright test --project=prod",
+  "test:all": "npm run test:uat && npm run test:prod"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",

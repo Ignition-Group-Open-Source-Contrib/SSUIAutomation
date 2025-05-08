@@ -42,13 +42,13 @@ stages:
         displayName: 'Install dependencies'
         workingDirectory: '$(Build.SourcesDirectory)'
 
+      
       - script: |
           set -e
           echo "Running tests for $(ENV_NAME) environment"
           echo "Base URL: $(BASE_URL)"
-          npm run $(TEST_SCRIPT) || exit 1
+          UAT_URL=$(BASE_URL) npm run $(TEST_SCRIPT)
         displayName: 'Run $(ENV_NAME) Tests'
-        workingDirectory: '$(Build.SourcesDirectory)'
         env:
           BASE_URL: $(BASE_URL)
         failOnStderr: false

@@ -1,29 +1,26 @@
 import { defineConfig } from '@playwright/test';
 import dotenv from 'dotenv';
-
-// Load environment variables
 dotenv.config();
 
 export default defineConfig({
   testDir: './tests',
   timeout: 120000,
-  use: {
-    headless: true,
-    browserName: 'chromium',
-    baseURL: process.env.BASE_URL || 'http://t2.silversurfer.ignitiongroup.co.za/',
-  },
   projects: [
     {
-      name: 'uat',
-      use: { 
-        baseURL: process.env.UAT_URL,
+      name: 'uat', // Must match --project=uat
+      use: {
+        headless: false, // Or false for debugging
+        browserName: 'chromium',
+        baseURL: process.env.UAT_URL || 'http://t2.silversurfer.ignitiongroup.co.za/Auth',
       },
     },
     {
       name: 'prod',
-      use: { 
-        baseURL: process.env.PROD_URL,
+      use: {
+        headless: false,
+        browserName: 'chromium',
+        baseURL: process.env.PROD_URL || 'https://silversurfer.ignitiongroup.co.za/Auth',
       },
-    },
-  ],
+    }
+  ]
 });
