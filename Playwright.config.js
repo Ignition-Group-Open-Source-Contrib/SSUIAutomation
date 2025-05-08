@@ -9,15 +9,15 @@ export default defineConfig({
     {
       name: 'uat', // Must match --project=uat
       use: {
-        headless: false, // Or false for debugging
+        headless: true, // Or false for debugging
         browserName: 'chromium',
-        baseURL: process.env.UAT_URL || 'http://t2.silversurfer.ignitiongroup.co.za/Auth',
+        baseURL: process.env.PLAYWRIGHT_BASE_URL,
       },
     },
     {
       name: 'prod',
       use: {
-        headless: false,
+        headless: true,
         browserName: 'chromium',
         baseURL: process.env.PROD_URL || 'https://silversurfer.ignitiongroup.co.za/Auth',
       },

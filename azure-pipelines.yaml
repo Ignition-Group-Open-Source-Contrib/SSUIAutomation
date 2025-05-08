@@ -15,20 +15,20 @@ stages:
       strategy:
         matrix:
           uat:
-            ENV_NAME: 'UAT'
+            ENV_NAME: 'uat'
             TEST_SCRIPT: 'test:uat'
-            BASE_URL: 'http://t2.silversurfer.ignitiongroup.co.za/Auth'
+            # BASE_URL: 'http://t2.silversurfer.ignitiongroup.co.za/Auth'
             ARTIFACT_NAME: 'playwright-report-uat'
-          prod:
-            ENV_NAME: 'PROD'
-            TEST_SCRIPT: 'test:prod'
-            BASE_URL: 'https://silversurfer.ignitiongroup.co.za/Auth'
-            ARTIFACT_NAME: 'playwright-report-prod'
+          # prod:
+          #   ENV_NAME: 'PROD'
+          #   TEST_SCRIPT: 'test:prod'
+          #   BASE_URL: 'https://silversurfer.ignitiongroup.co.za/Auth'
+          #   ARTIFACT_NAME: 'playwright-report-prod'
         maxParallel: 2
       steps:
       - task: NodeTool@0
         inputs:
-          versionSpec: '16.x'
+          versionSpec: '18.x'
         displayName: 'Install Node.js'
 
       - script: |
@@ -42,13 +42,13 @@ stages:
       - script: |
           set -ex
           echo "Running tests for $(ENV_NAME) environment"
-          echo "Using base URL: $(BASE_URL)"
-          PLAYWRIGHT_BASE_URL=$(BASE_URL) npm run $(TEST_SCRIPT)
+          # echo "Using base URL: $(BASE_URL)"
+          npm run $(TEST_SCRIPT) -- --reporter=html
         displayName: 'Run $(ENV_NAME) Tests'
         workingDirectory: '$(Build.SourcesDirectory)'
-        env:
-          PLAYWRIGHT_BASE_URL: $(BASE_URL)
+        # env:
+        #   PLAYWRIGHT_BASE_URL: $(BASE_URL)
 
-      - publish: $(System.DefaultWorkingDirectory)/playwright-report
+      - publish: $(Build.SourcesDirectory)/playwright-report
         artifact: $(ARTIFACT_NAME)
         condition: always()
