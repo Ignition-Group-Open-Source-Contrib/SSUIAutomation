@@ -41,7 +41,7 @@ stages:
           set -ex
           echo "Running tests for $(ENV_NAME) environment"
           # echo "Using base URL: $(BASE_URL)"
-          npm run $(TEST_SCRIPT) -- --config=Playwright.config.js --reporter=html
+          npm run $(TEST_SCRIPT) --reporter=html
         displayName: 'Run $(ENV_NAME) Tests'
         workingDirectory: '$(Build.SourcesDirectory)'
 
