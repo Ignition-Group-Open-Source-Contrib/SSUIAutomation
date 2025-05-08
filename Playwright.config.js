@@ -2,6 +2,8 @@ import { defineConfig } from '@playwright/test';
 import dotenv from 'dotenv';
 dotenv.config();
 
+console.log("✅ Playwright config loaded!");
+
 export default defineConfig({
   testDir: './tests',
   timeout: 120000,
