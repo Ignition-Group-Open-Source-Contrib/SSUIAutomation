@@ -7,9 +7,6 @@ trigger:
 stages:
   - stage: RunTests
     displayName: Run Tests on All Environments
-    # variables:
-    #   - group: 'MarketicAutomation variables-prd'  # Contains PROD_URL
-    #   - group: 'MarketicAutomation variables-test'  # Contains UAT_URL
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
@@ -22,11 +19,11 @@ stages:
             TEST_SCRIPT: 'test:uat'
             BASE_URL: 'http://t2.silversurfer.ignitiongroup.co.za/Auth'
             ARTIFACT_NAME: 'playwright-report-uat'
-          # prod:
-          #   ENV_NAME: 'PROD'
-          #   TEST_SCRIPT: 'test:prod'
-          #   # BASE_URL: $(PROD_URL)
-          #   ARTIFACT_NAME: 'playwright-report-prod'
+          prod:
+            ENV_NAME: 'PROD'
+            TEST_SCRIPT: 'test:prod'
+            BASE_URL: 'https://silversurfer.ignitiongroup.co.za/Auth'
+            ARTIFACT_NAME: 'playwright-report-prod'
         maxParallel: 2
       steps:
       - task: NodeTool@0
@@ -35,23 +32,22 @@ stages:
         displayName: 'Install Node.js'
 
       - script: |
-          set -e
+          set -ex
           npm install
           npx playwright install
           npx playwright install-deps
         displayName: 'Install dependencies'
         workingDirectory: '$(Build.SourcesDirectory)'
 
-      
       - script: |
-          set -e
+          set -ex
           echo "Running tests for $(ENV_NAME) environment"
-          echo "Base URL: $(BASE_URL)"
-          UAT_URL=$(BASE_URL) npm run $(TEST_SCRIPT)
+          echo "Using base URL: $(BASE_URL)"
+          PLAYWRIGHT_BASE_URL=$(BASE_URL) npm run $(TEST_SCRIPT)
         displayName: 'Run $(ENV_NAME) Tests'
+        workingDirectory: '$(Build.SourcesDirectory)'
         env:
-          BASE_URL: $(BASE_URL)
-        failOnStderr: false
+          PLAYWRIGHT_BASE_URL: $(BASE_URL)
 
       - publish: $(System.DefaultWorkingDirectory)/playwright-report
         artifact: $(ARTIFACT_NAME)
