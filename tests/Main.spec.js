@@ -3,10 +3,13 @@ import { Basefile } from './Basefile';
 import { CreateOrder } from './CreateOrder';
 // import { AddDeals } from './AddDeals';
 import { AddDealsCsv } from './AddDealsCsv';
+import { SearchOrder } from './SearchOrder';
 
 test.describe('Test Suite with beforeAll Hook', () => {
   let basefile;
   let createOrder;
+  let searchOrder;
+  let orderrefvalue;
   // let addDeals;  // Declare this variable
 
   test.beforeAll(async () => {
@@ -17,6 +20,7 @@ test.describe('Test Suite with beforeAll Hook', () => {
     await basefile.login();  // Perform login
 
     createOrder = new CreateOrder(basefile);  // Initialize CreateOrder after the page is ready
+    searchOrder = new SearchOrder(basefile);  // Initialize searchorder after the page is ready
   });
 
   test('Test 1 - Navigate till Sales Page and Take Screen Shot', async () => {
@@ -38,7 +42,10 @@ test.describe('Test Suite with beforeAll Hook', () => {
     await createOrder.CustomerDetails();
     await createOrder.CustomerAddress();
     await createOrder.DealsDeatils();
-    await createOrder.AddBankDetails();
+    orderrefvalue = await createOrder.AddBankDetails();
+    await searchOrder.searchingOrder(orderrefvalue)
+    await searchOrder.fetchOrderStatus()
+    await searchOrder.cancelOrdersFromSS()
     
   })
 

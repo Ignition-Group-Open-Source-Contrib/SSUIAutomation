@@ -6,13 +6,16 @@ console.log("Playwright config loaded!");
 
 export default defineConfig({
   testDir: './tests',
-  timeout: 120000,
+  timeout: 360000,
+  expect: {
+    timeout: 30000 // Global expect timeout
+  },
   reporter: [['html', { outputFolder: 'playwright-report' }]],
   projects: [
     {
       name: 'uat', // Must match --project=uat
       use: {
-        headless: true, // Or false for debugging
+        headless: false, // Or false for debugging
         browserName: 'chromium',
         baseURL: process.env.UAT_URL || 'http://t2.silversurfer.ignitiongroup.co.za',
       },
@@ -20,7 +23,7 @@ export default defineConfig({
     {
       name: 'prod',
       use: {
-        headless: true,
+        headless: false,
         browserName: 'chromium',
         baseURL: process.env.PROD_URL || 'https://silversurfer.ignitiongroup.co.za/Auth',
       },
