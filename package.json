@@ -5,8 +5,11 @@
   "main": "index.js",
   "scripts": {
   "test:uat": "playwright test --project=uat",
+  "test:uat:cancel": "set RUN_CANCEL=true&& playwright test --project=uat",
   "test:prod": "playwright test --project=prod",
-  "test:all": "npm run test:uat && npm run test:prod"
+  "test:prod:cancel": "set RUN_CANCEL=true&& playwright test --project=prod",
+  "test:all": "npm run test:uat && npm run test:prod",
+  "test:all:cancel": "set RUN_CANCEL=true&& playwright test"
 },
   "keywords": [],
   "author": "",

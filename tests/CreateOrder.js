@@ -1,6 +1,5 @@
 import { expect } from '@playwright/test';
 import { generateRandomID } from './RsaId.js';
-// import { AddDeals } from './AddDeals';
 import { AddDealsCsv } from './AddDealsCsv.js';
 
 function generateRandomNumberString(length) {
@@ -83,14 +82,13 @@ export class CreateOrder {
 
     // Wait for the Sales dropdown to be visible before clicking
     await this.page.waitForSelector(this.SalesDropdown, { state: 'visible' });
-    console.log('Sales dropdown visibled')
     await this.page.click(this.SalesDropdown);
-    console.log('Sales dropdown clicked')
     await this.page.waitForTimeout(2000);
 
     // Wait for Start Selling dropdown to be visible and then click
     await this.page.waitForSelector(this.StartSellingDropdown, { state: 'visible' });
     await this.page.click(this.StartSellingDropdown);
+    console.log('Started Selling the Products :) ...')
     await this.page.waitForTimeout(2000);
 
   }
@@ -120,31 +118,29 @@ export class CreateOrder {
     if (!rsaID) {
       throw new Error("RSA ID generation failed. RSA ID is undefined or invalid.");
     }
-    await this.page.fill(this.idNumberField, rsaID);
-
+    await this.page.fill(this.idNumberField, rsaID)
     await this.page.waitForTimeout(1000)
     await this.page.fill(this.mobileNumberField, this.mobileNumber)
-
     await this.page.waitForTimeout(1000)
     const emailfieldlocator = await this.page.locator(this.emailAddress)
-
     await this.page.waitForTimeout(1000)
     await emailfieldlocator.clear()
     await this.page.waitForTimeout(1000)
     await emailfieldlocator.fill(emailfield)
-
-    await this.page.waitForTimeout(1000)
-    await this.page.screenshot({ path: 'CustomerDetailsPage-screenshot.png' })
-
+    console.log("Generated Email Address:", emailfield);  // Log the generated RSA ID
+    if (!emailfield) {
+      throw new Error("Email Address generation failed. Email Address is undefined or invalid.");
+    }
   }
 
   async CustomerAddress() {
     if (!this.page) {
       throw new Error('Page is not initialized');
     }
-
+    
     const isElementVisible = await this.page.isVisible(this.CustomerAddressTab)
     if (isElementVisible) {
+      console.log("Started Integrating with Customer Address Page...")
       await this.page.waitForSelector(this.CustomerAddressTab)
       await this.page.waitForTimeout(2000)
       await this.page.click(this.CustomerAddressTab)
@@ -177,11 +173,10 @@ export class CreateOrder {
       await this.page.click(this.datepicker)
       await this.page.waitForTimeout(1000)
       await this.page.click(this.SaveAddressButton)
-
       await this.page.waitForTimeout(1000)
     }
     else {
-      console.log('Customer Address are not required.')
+      console.log('Customer Address is not required...')
     }
   }
 
@@ -192,16 +187,13 @@ export class CreateOrder {
 
     this.page.waitForSelector(this.dealDetailsTab)
     await this.page.click(this.dealDetailsTab)
-
-    this.page.waitForTimeout(2000)
-    // this.page.pause()
-    await this.page.waitForSelector(this.cartBody)
+    await this.page.waitForSelector(this.cartBody , { state: 'attached' })
     const campaignDropdown = this.page.locator(this.campaignsDropdown)
     await campaignDropdown.click()
     await campaignDropdown.selectOption({ label: 'Test Lead Campaign' })
     await this.page.waitForTimeout(2000)
     this.addDeals = new AddDealsCsv(this.page);  // Create an instance of AddDeals
-    await this.addDeals.dealsDetails();  // Call the dealsDetails method properly
+    await this.addDeals.dealsDetails();  // Calling the dealsDetails method
 
   }
 
@@ -209,14 +201,11 @@ export class CreateOrder {
     if (!this.page) {
       throw new Error('Page is not initialized');
     }
-
     await this.page.waitForSelector(this.AddBankDeatilsButton)
     await this.page.click(this.AddBankDeatilsButton)
     this.page.waitForTimeout(2000)
-
     this.readBankingData = await this.addDeals.readBankingData();
-    this.accountNumber = generateRandomNumberString(8)
-
+    this.accountNumber = generateRandomNumberString(7)
     for (const bankdetail of this.readBankingData) {
       await this.page.fill(this.AccountHolderName, bankdetail.AccountHolderName)
       await this.page.waitForTimeout(1000)
@@ -228,7 +217,6 @@ export class CreateOrder {
       await branches.click()
       await this.page.waitForTimeout(1000)
       await branches.selectOption({ label: bankdetail.BranchName })
-      const accountNumber = generateRandomNumberString(7);
       await this.page.waitForTimeout(1000)
       await this.page.click(this.accountNumberField)
       await this.page.waitForTimeout(1000)
@@ -270,7 +258,7 @@ export class CreateOrder {
         try {
           this.Debicheckordervalue = await DebicheckOrdereference.textContent(); // Use textContent() instead of inputValue()
           if (this.Debicheckordervalue != null && this.Debicheckordervalue.trim() !== "") {
-            console.log('DebiCheckOrderReference Value is:', this.Debicheckordervalue.trim());
+            console.log('OrderReference Value is:', this.Debicheckordervalue.trim());
           } else {
             console.log('Error: One of the DebiCheckOrderReference values is null or empty.');
           }
@@ -279,7 +267,6 @@ export class CreateOrder {
         }
         
       }
-      console.log('DebicheckOrderValue Value return successfully..')
       return this.Debicheckordervalue
     } else {
       await this.page.waitForSelector(this.orderReferenceField, { state: 'attached' });

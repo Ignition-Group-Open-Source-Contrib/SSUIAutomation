@@ -1,13 +1,11 @@
 // basefile.js
 import { chromium } from 'playwright';
 
-export class Basefile {  // Class name in PascalCase
+export class Basefile {
 
   constructor() {
     this.browser = null;
     this.page = null;
-    // this.TestURL = 'http://t2.silversurfer.ignitiongroup.co.za/Auth'
-    // this.ProdURL = 'https://silversurfer.ignitiongroup.co.za/Auth'
     this.loginFormUserName = '#txtUsername';
     this.loginFormPassword = '#txtPassword';
     this.signInButton = '#btnSignIn';
@@ -18,10 +16,10 @@ export class Basefile {  // Class name in PascalCase
 
   // Method to launch browser and page
   async launchBrowser() {
-    console.log('Launching the browser...');
-    this.browser = await chromium.launch();  // You can pass options to control headless mode
+    console.log('Browser Launched Successfullyy...');
+    this.browser = await chromium.launch(); 
     this.page = await this.browser.newPage();
-    await this.page.setViewportSize({ width: 1366, height: 768 });
+    await this.page.setViewportSize({ width: 1350, height: 750 });
   }
 
   // Method to perform login
@@ -37,7 +35,7 @@ export class Basefile {  // Class name in PascalCase
 
   // Method to close the browser
   async closeBrowser() {
-    console.log('Closing the browser...');
+    console.log('Browser Closed :) ...');
     await this.browser.close();
   }
 }

@@ -59,19 +59,17 @@ export class SearchOrder {
         await this.page.waitForTimeout(1000)
         await this.page.click(this.searchResultViewButton)
         await this.page.waitForSelector(this.OrdersTab, { state: 'attached', timeout: 5000 })
-        // await this.page.pause()
         await this.page.waitForTimeout(3000)
         await this.page.click(this.OrdersTab)
-        // await this.page.waitForTimeout(3000)
         await this.page.waitForSelector(this.allActionDropdowns, { state: 'attached', timeout: 5000 })
-        console.log('Order Successfully Created on Silver Surfer');
+        console.log('Order Successfully Created on Silver Surfer ...');
 
     }
     
     async fetchOrderStatus() {
         // Set more generous timeouts
-        const STATUS_UPDATE_TIMEOUT = 90000; // 60 seconds total
-        const POLL_INTERVAL = 20000; // Check every 10 seconds
+        const STATUS_UPDATE_TIMEOUT = 180000; // 180 seconds total
+        const POLL_INTERVAL = 20000; // Check every 20 seconds
 
         await this.page.waitForSelector(this.Orderstatuses, { state: 'visible' });
         await this.page.waitForSelector(this.providersInfo, { state: 'visible' });
@@ -115,7 +113,7 @@ export class SearchOrder {
             }).toBeTruthy();
         } catch (error) {
             console.error('Status update check failed:', error.message);
-            // Add recovery logic or final verification here
+            // Added recovery logic or final verification here
             await this.finalStatusVerification();
             throw error; // Re-throw if you want the test to fail
         }
@@ -137,8 +135,8 @@ export class SearchOrder {
 
     async cancelOrdersFromSS() {
 
-        const STATUS_UPDATE_TIMEOUT = 60000; // 60 seconds total
-        const POLL_INTERVAL = 15000; // Check every 10 seconds
+        const STATUS_UPDATE_TIMEOUT = 180000; // 180 seconds total
+        const POLL_INTERVAL = 15000; // Check every 15 seconds
         await this.page.waitForTimeout(2000);
         await this.page.waitForSelector(this.allActionDropdowns, { state: 'visible' });
         const actiondropdown = await this.page.locator(this.allActionDropdowns).all();
@@ -146,10 +144,9 @@ export class SearchOrder {
         if (actiondropdown.length === 0) {
             throw new Error("No Action Dropdown Found!");
         }
-        console.log('Actiondropdwon length is ', actiondropdown.length)
 
         for (let i = 0; i < actiondropdown.length; i++) {
-            await actiondropdown[i].click();  // Use Locator.click() instead of page.click()
+            await actiondropdown[i].click(); 
             await this.page.waitForTimeout(1000);
             await this.page.click(this.cancelOrderDropdowmButton);
             await this.page.waitForSelector(this.cancelOrderItemContainer, { state: 'attached' });
@@ -157,7 +154,6 @@ export class SearchOrder {
             const cancelreason = this.page.locator(this.cancelReasonDropDown);
             await cancelreason.selectOption({ label: this.CancelReasonDropDownValue });
             await this.page.waitForTimeout(1000);
-            // await this.page.pause()
             await this.page.click(this.cancelReasonDetailDropDown);
             const cancelReason = this.page.locator(this.cancelReasonDetailDropDown);
             await cancelReason.selectOption({ label: this.CancelReasonDetialValue });
@@ -169,29 +165,21 @@ export class SearchOrder {
             await this.page.waitForTimeout(1500)
             const ProgressindicatorisVisible = await this.page.locator(this.progressIndicator)
             if (ProgressindicatorisVisible.isVisible()) {
-                console.log('Progress indicator appeared');
                 await this.page.waitForSelector(this.progressIndicator, { state: 'hidden' });
                 await this.page.waitForSelector(this.cancelOrderItemContainer, { state: 'hidden' });
-                console.log('cancelOrderItemContainer hidden')
                 await this.page.waitForTimeout(2000);
-                // 1. Wait for the element to be visible
                 await this.page.waitForSelector(this.orderCancelledalertmessage, { state: 'visible' });
-                console.log('orderCancelledalertmessage visible')
                 this.actualMessage = await this.page.locator(this.orderCancelledalertmessage).textContent()
             }
             else {
-                console.log('Progress indicator not appeared');
                 await this.page.waitForSelector(this.cancelOrderItemContainer, { state: 'hidden' });
-                console.log('cancelOrderItemContainer hidden')
                 await this.page.waitForTimeout(2000);
-                // 1. Wait for the element to be visible
                 await this.page.waitForSelector(this.orderCancelledalertmessage, { state: 'visible' });
-                console.log('orderCancelledalertmessage visible')
                 this.actualMessage = await this.page.locator(this.orderCancelledalertmessage).textContent()
             }
-            console.log('Order cancelled alert message is :', this.actualMessage)
+            console.log(`Order number ${i+1} : ${this.actualMessage}`)
 
-            // 3. Verify the message matches expected
+            // Verify the message matches expected
             if (this.actualMessage.trim() !== this.expectedAlertMessageCancelOrder.trim()) {
                 throw new Error(`Message does not match! Expected: "${this.expectedAlertMessageCancelOrder}", Actual: "${this.actualMessage}"`);
             }
@@ -204,11 +192,9 @@ export class SearchOrder {
                 await this.page.reload({ waitUntil: 'networkidle' });
                 await this.page.waitForSelector(this.OrdersTab, { state: 'attached' });
                 await this.page.click(this.OrdersTab);
-
                 const updatedStatuses = await this.page.locator(this.Orderstatuses).allTextContents();
                 console.log('Current statuses:', updatedStatuses);
                 const wantedStatuses = ['Cancelled']
-
                 // Return true if no pending status found
                 return updatedStatuses.some(status =>
                     wantedStatuses.some(wanted => status.includes(wanted))
@@ -219,11 +205,11 @@ export class SearchOrder {
                 message: 'Order status did not update from Pending state'
             }).toBeTruthy();
 
-            await this.finalStatusVerification(); // ✅ Assuming this is defined
+            await this.finalStatusVerification();
             console.log('All orders have been cancelled.');
         } catch (error) {
             console.error('Status update check failed:', error.message);
-            // Add recovery logic or final verification here
+            // Add recovery logic of final verification after cancel order..
             await this.finalStatusVerification();
             throw error; // Re-throw if you want the test to fail
         }
