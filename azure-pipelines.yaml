@@ -20,7 +20,7 @@ stages:
           #   ARTIFACT_NAME: 'playwright-report-uat'
           prod:
             ENV_NAME: 'PROD'
-            TEST_SCRIPT: 'test:prod'
+            TEST_SCRIPT: 'test:prod:cancel'
             ARTIFACT_NAME: 'playwright-report-prod'
         maxParallel: 2
       steps:
