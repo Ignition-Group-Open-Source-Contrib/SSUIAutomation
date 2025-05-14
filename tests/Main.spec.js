@@ -83,7 +83,7 @@ test.describe('Test Suite with beforeAll Hook', () => {
         contentType: 'image/png'
       });
     } else {
-      console.log(`Skipping cancellation on [${testInfo.project.name}] env`);
+      console.log(`Skipping cancellation on ${testInfo.project.name} env`);
     }
     console.log('Test 4 completed');
 
