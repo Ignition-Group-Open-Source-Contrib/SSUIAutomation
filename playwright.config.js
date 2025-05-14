@@ -30,7 +30,7 @@ export default defineConfig({
     {
       name: 'prod',
       use: {
-        headless: false,
+        headless: true,
         browserName: 'chromium',
         baseURL: process.env.PROD_URL || 'https://silversurfer.ignitiongroup.co.za/Auth',
         RUN_CANCEL: process.env.RUN_CANCEL === 'true' // Default false
