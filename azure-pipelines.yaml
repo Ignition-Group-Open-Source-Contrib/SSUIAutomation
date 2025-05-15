@@ -34,15 +34,15 @@ stages:
         matrix:
           ${{ if eq(parameters.environment, 'all') }}:
           all:
-            TEST_SCRIPT: test:all${{ if eq(parameters.runCancel, true) }}:cancel${{ end }}
+            TEST_SCRIPT: ${{ if and(parameters.runCancel, eq(parameters.environment, 'all')) }}test:all:cancel${{ else }}test:all${{ endif }}
             ARTIFACT_NAME: playwright-report-all
           ${{ if eq(parameters.environment, 'uat') }}:
           uat:
-            TEST_SCRIPT: test:uat${{ if eq(parameters.runCancel, true) }}:cancel${{ end }}
+            TEST_SCRIPT: ${{ if and(parameters.runCancel, eq(parameters.environment, 'uat')) }}test:uat:cancel${{ else }}test:uat${{ endif }}
             ARTIFACT_NAME: playwright-report-uat
           ${{ if eq(parameters.environment, 'prod') }}:
           prod:
-            TEST_SCRIPT: test:prod${{ if eq(parameters.runCancel, true) }}:cancel${{ end }}
+            TEST_SCRIPT: ${{ if and(parameters.runCancel, eq(parameters.environment, 'prod')) }}test:prod:cancel${{ else }}test:prod${{ endif }}
             ARTIFACT_NAME: playwright-report-prod
         maxParallel: 2
       steps:
