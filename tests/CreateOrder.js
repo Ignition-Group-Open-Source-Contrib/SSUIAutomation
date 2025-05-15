@@ -140,7 +140,6 @@ export class CreateOrder {
     
     const isElementVisible = await this.page.isVisible(this.CustomerAddressTab)
     if (isElementVisible) {
-      console.log("Started Integrating with Customer Address Page...")
       await this.page.waitForSelector(this.CustomerAddressTab)
       await this.page.waitForTimeout(2000)
       await this.page.click(this.CustomerAddressTab)

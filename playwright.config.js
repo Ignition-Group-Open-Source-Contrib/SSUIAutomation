@@ -7,7 +7,7 @@ console.log("Playwright config loaded!");
 export default defineConfig({
   testDir: './tests',
   timeout: 360000,
-  maxFailures: 1,
+  maxFailures: 1, // it allow us to stop the entire execution after the 1 test failure..
   expect: {
     timeout: 30000 // Global expect timeout
   },
@@ -16,7 +16,7 @@ export default defineConfig({
   ['html', { outputFolder: 'playwright-report' }], // Single HTML reporter
   ['./custom-reporter.js', { outputFile: 'test-stats.json' }]
 ],
-  // reporter: [['html', { outputFolder: 'playwright-report' }]],
+
   projects: [
     {
       name: 'uat', // Must match --project=uat

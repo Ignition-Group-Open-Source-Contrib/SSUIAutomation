@@ -1,28 +1,35 @@
 resources:
 - repo: self
 
+parameters:
+- name: runCancel
+  displayName: 'Run Cancel Tests?'
+  type: boolean
+  default: false
+- name: environment
+  displayName: 'Environment to Test'
+  type: string
+  default: 'prod'
+  values:
+  - 'uat'
+  - 'prod'
+  - 'all'
+
+variables:
+  RUN_CANCEL: ${{ lower(format('{0}', parameters.runCancel)) }}
+  SELECTED_ENVIRONMENT: ${{ parameters.environment }}
+
 trigger:
 - main
 
 stages:
   - stage: RunTests
-    displayName: Run Tests on All Environments
+    displayName: Run Tests
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
-    - job: RunAllTests
-      displayName: 'Run Tests in Parallel'
-      strategy:
-        matrix:
-          # uat:
-          #   ENV_NAME: 'uat'
-          #   TEST_SCRIPT: 'test:uat'
-          #   ARTIFACT_NAME: 'playwright-report-uat'
-          prod:
-            ENV_NAME: 'PROD'
-            TEST_SCRIPT: 'test:prod:cancel'
-            ARTIFACT_NAME: 'playwright-report-prod'
-        maxParallel: 2
+    - job: TestRunner
+      displayName: 'TestRunner'
       steps:
       - task: NodeTool@0
         inputs:
@@ -36,15 +43,44 @@ stages:
           npx playwright install-deps
         displayName: 'Install dependencies'
         workingDirectory: '$(Build.SourcesDirectory)'
-
+      
+      # Handle 'all' environment case (sequential)
+      - ${{ if eq(parameters.environment, 'all') }}:
       - script: |
-          set -ex
-          echo "Running tests for $(ENV_NAME) environment"
-          # echo "Using base URL: $(BASE_URL)"
-          npm run $(TEST_SCRIPT) --reporter=html
-        displayName: 'Run $(ENV_NAME) Tests'
+            set -ex
+            echo "Running ALL tests sequentially with RUN_CANCEL=$(RUN_CANCEL)"
+            npm run test:all$([ "$(RUN_CANCEL)" = "true" ] && echo ":cancel") --reporter=html
+        displayName: 'Run All Tests (Sequential)'
         workingDirectory: '$(Build.SourcesDirectory)'
 
       - publish: $(Build.SourcesDirectory)/playwright-report
-        artifact: $(ARTIFACT_NAME)
+        artifact: playwright-report-all
         condition: always()
+      # Handle individual environments (parallel)
+      - ${{ if and(ne(parameters.environment, 'all'), or(eq(parameters.environment, 'uat'), eq(parameters.environment, 'prod')) }}:
+    - job: ParallelTests
+      displayName: 'Run ${{ parameters.environment }} Tests'
+      strategy:
+          matrix:
+            ${{ if eq(parameters.environment, 'uat') }}:
+              uat:
+                ENV_NAME: 'UAT'
+                TEST_SCRIPT: ${{ format('test:uat{0}', parameters.runCancel && ':cancel' || '') }}
+                ARTIFACT_NAME: 'playwright-report-uat'
+            ${{ if eq(parameters.environment, 'prod') }}:
+              prod:
+                ENV_NAME: 'PROD'
+                TEST_SCRIPT: ${{ format('test:prod{0}', parameters.runCancel && ':cancel' || '') }}
+                ARTIFACT_NAME: 'playwright-report-prod'
+          maxParallel: 2
+      steps:
+        - script: |
+            set -ex
+            echo "Running tests for $(ENV_NAME)"
+            npm run $(TEST_SCRIPT) --reporter=html
+          displayName: 'Run $(ENV_NAME) Tests'
+          workingDirectory: '$(Build.SourcesDirectory)'
+
+        - publish: $(Build.SourcesDirectory)/playwright-report
+          artifact: $(ARTIFACT_NAME)
+          condition: always()
