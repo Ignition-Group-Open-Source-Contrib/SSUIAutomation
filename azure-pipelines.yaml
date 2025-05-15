@@ -1,74 +1,50 @@
 resources:
 - repo: self
 
-parameters:
-- name: runCancel
-  displayName: 'Run Cancel Tests?'
-  type: boolean
-  default: false
-- name: environment
-  displayName: 'Environment to Test'
-  type: string
-  default: 'prod'
-  values:
-    - 'uat'
-    - 'prod'
-    - 'all'
-
-variables:
-  RUN_CANCEL: ${{ lower(format('{0}', parameters.runCancel)) }}
-  SELECTED_ENVIRONMENT: ${{ parameters.environment }}
-
 trigger:
 - main
 
 stages:
-- stage: RunTests
-  displayName: Run Tests
-  pool:
-    vmImage: 'ubuntu-latest'
-  jobs:
-  - job: Setup
-    displayName: 'Install Dependencies'
-    steps:
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '18.x'
-      displayName: 'Install Node.js'
-    - script: |
-        set -ex
-        npm install
-        npx playwright install
-        npx playwright install-deps
-      displayName: 'Install Playwright & Dependencies'
-      workingDirectory: '$(Build.SourcesDirectory)'
-
-  - job: RunTests
-    displayName: 'Execute Tests'
-    dependsOn: Setup
-    strategy:
-      matrix:
-        ${{ if eq(parameters.environment, 'all') }}:
-          all:
-            TEST_SCRIPT: test:all${{ parameters.runCancel && ':cancel' || '' }}
-            ARTIFACT_NAME: playwright-report-all
-        ${{ if eq(parameters.environment, 'uat') }}:
-          uat:
-            TEST_SCRIPT: test:uat${{ parameters.runCancel && ':cancel' || '' }}
-            ARTIFACT_NAME: playwright-report-uat
-        ${{ if eq(parameters.environment, 'prod') }}:
+  - stage: RunTests
+    displayName: Run Tests on All Environments
+    pool:
+      vmImage: 'ubuntu-latest'
+    jobs:
+    - job: RunAllTests
+      displayName: 'Run Tests in Parallel'
+      strategy:
+        matrix:
+          # uat:
+          #   ENV_NAME: 'uat'
+          #   TEST_SCRIPT: 'test:uat'
+          #   ARTIFACT_NAME: 'playwright-report-uat'
           prod:
-            TEST_SCRIPT: test:prod${{ parameters.runCancel && ':cancel' || '' }}
-            ARTIFACT_NAME: playwright-report-prod
-      maxParallel: 2
-    steps:
-    - script: |
-        set -ex
-        echo "Running tests for $(TEST_SCRIPT)"
-        npm run $(TEST_SCRIPT) --reporter=html
-      displayName: 'Run $(TEST_SCRIPT) Tests'
-      workingDirectory: '$(Build.SourcesDirectory)'
+            ENV_NAME: 'PROD'
+            TEST_SCRIPT: 'test:prod:cancel'
+            ARTIFACT_NAME: 'playwright-report-prod'
+        maxParallel: 2
+      steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '18.x'
+        displayName: 'Install Node.js'
 
-    - publish: $(Build.SourcesDirectory)/playwright-report
-      artifact: $(ARTIFACT_NAME)
-      condition: always()
+      - script: |
+          set -ex
+          npm install
+          npx playwright install
+          npx playwright install-deps
+        displayName: 'Install dependencies'
+        workingDirectory: '$(Build.SourcesDirectory)'
+
+      - script: |
+          set -ex
+          echo "Running tests for $(ENV_NAME) environment"
+          # echo "Using base URL: $(BASE_URL)"
+          npm run $(TEST_SCRIPT) --reporter=html
+        displayName: 'Run $(ENV_NAME) Tests'
+        workingDirectory: '$(Build.SourcesDirectory)'
+
+      - publish: $(Build.SourcesDirectory)/playwright-report
+        artifact: $(ARTIFACT_NAME)
+        condition: always()
