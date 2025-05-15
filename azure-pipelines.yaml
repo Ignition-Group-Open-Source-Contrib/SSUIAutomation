@@ -1,27 +1,49 @@
 resources:
 - repo: self
 
+parameters:
+- name: runCancel
+  displayName: 'Run Cancel Tests?'
+  type: boolean
+  default: false
+- name: environment
+  displayName: 'Environment to Test'
+  type: string
+  default: 'prod'
+  values:
+    - 'uat'
+    - 'prod'
+    - 'all'
+
+variables:
+  RUN_CANCEL: ${{ lower(format('{0}', parameters.runCancel)) }}
+  SELECTED_ENVIRONMENT: ${{ parameters.environment }}
+
 trigger:
 - main
 
 stages:
   - stage: RunTests
-    displayName: Run Tests on All Environments
+    displayName: Run Tests
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
     - job: RunAllTests
-      displayName: 'Run Tests in Parallel'
+      displayName: 'Execute Tests'
       strategy:
         matrix:
-          # uat:
-          #   ENV_NAME: 'uat'
-          #   TEST_SCRIPT: 'test:uat'
-          #   ARTIFACT_NAME: 'playwright-report-uat'
+          ${{ if eq(parameters.environment, 'all') }}:
+          all:
+            TEST_SCRIPT: test:all${{ parameters.runCancel && ':cancel' || '' }}
+            ARTIFACT_NAME: playwright-report-all
+          ${{ if eq(parameters.environment, 'uat') }}:
+          uat:
+            TEST_SCRIPT: test:uat${{ parameters.runCancel && ':cancel' || '' }}
+            ARTIFACT_NAME: playwright-report-uat
+          ${{ if eq(parameters.environment, 'prod') }}:
           prod:
-            ENV_NAME: 'PROD'
-            TEST_SCRIPT: 'test:prod:cancel'
-            ARTIFACT_NAME: 'playwright-report-prod'
+            TEST_SCRIPT: test:prod${{ parameters.runCancel && ':cancel' || '' }}
+            ARTIFACT_NAME: playwright-report-prod
         maxParallel: 2
       steps:
       - task: NodeTool@0
@@ -34,7 +56,7 @@ stages:
           npm install
           npx playwright install
           npx playwright install-deps
-        displayName: 'Install dependencies'
+        displayName: 'Install Playwright & Dependencies'
         workingDirectory: '$(Build.SourcesDirectory)'
 
       - script: |
