@@ -74,13 +74,13 @@ stages:
                 ARTIFACT_NAME: 'playwright-report-prod'
           maxParallel: 2
       steps:
-        - script: |
-            set -ex
-            echo "Running tests for $(ENV_NAME)"
-            npm run $(TEST_SCRIPT) --reporter=html
-          displayName: 'Run $(ENV_NAME) Tests'
-          workingDirectory: '$(Build.SourcesDirectory)'
+      - script: |
+          set -ex
+          echo "Running tests for $(ENV_NAME)"
+          npm run $(TEST_SCRIPT) --reporter=html
+        displayName: 'Run $(ENV_NAME) Tests'
+        workingDirectory: '$(Build.SourcesDirectory)'
 
-        - publish: $(Build.SourcesDirectory)/playwright-report
-          artifact: $(ARTIFACT_NAME)
-          condition: always()
+      - publish: $(Build.SourcesDirectory)/playwright-report
+        artifact: $(ARTIFACT_NAME)
+        condition: always()
