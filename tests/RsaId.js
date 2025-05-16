@@ -45,7 +45,7 @@ import { randomInt } from 'crypto';
         let controlDigit = (10 - (sum % 10)) % 10;
         randomID += controlDigit.toString();
 
-        console.log(`birthYearOffset: ${birthYearOffset}, birthMonth: ${birthMonth}, maxDay: ${maxDay}`);
+        // console.log(`birthYearOffset: ${birthYearOffset}, birthMonth: ${birthMonth}, maxDay: ${maxDay}`);
 
         return randomID;
     }

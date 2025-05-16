@@ -1,27 +1,49 @@
 resources:
 - repo: self
 
+parameters:
+- name: runCancel
+  displayName: 'Run Cancel Tests?'
+  type: boolean
+  default: false
+- name: environment
+  displayName: 'Environment to Test'
+  type: string
+  default: 'prod'
+  values:
+    - 'uat'
+    - 'prod'
+    - 'all'
+
+variables:
+  RUN_CANCEL: ${{ lower(format('{0}', parameters.runCancel)) }}
+  SELECTED_ENVIRONMENT: ${{ parameters.environment }}
+
 trigger:
 - main
 
 stages:
   - stage: RunTests
-    displayName: Run Tests on All Environments
+    displayName: Run Tests
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
     - job: RunAllTests
-      displayName: 'Run Tests in Parallel'
+      displayName: 'Execute Tests'
       strategy:
         matrix:
+          ${{ if eq(parameters.environment, 'all') }}:
+          all:
+            TEST_SCRIPT: ${{ if and(parameters.runCancel, eq(parameters.environment, 'all')) }}test:all:cancel${{ else }}test:all${{ endif }}
+            ARTIFACT_NAME: playwright-report-all
+          ${{ if eq(parameters.environment, 'uat') }}:
           uat:
-            ENV_NAME: 'uat'
-            TEST_SCRIPT: 'test:uat'
-            ARTIFACT_NAME: 'playwright-report-uat'
-          # prod:
-          #   ENV_NAME: 'PROD'
-          #   TEST_SCRIPT: 'test:prod'
-          #   ARTIFACT_NAME: 'playwright-report-prod'
+            TEST_SCRIPT: ${{ if and(parameters.runCancel, eq(parameters.environment, 'uat')) }}test:uat:cancel${{ else }}test:uat${{ endif }}
+            ARTIFACT_NAME: playwright-report-uat
+          ${{ if eq(parameters.environment, 'prod') }}:
+          prod:
+            TEST_SCRIPT: ${{ if and(parameters.runCancel, eq(parameters.environment, 'prod')) }}test:prod:cancel${{ else }}test:prod${{ endif }}
+            ARTIFACT_NAME: playwright-report-prod
         maxParallel: 2
       steps:
       - task: NodeTool@0
@@ -34,7 +56,7 @@ stages:
           npm install
           npx playwright install
           npx playwright install-deps
-        displayName: 'Install dependencies'
+        displayName: 'Install Playwright & Dependencies'
         workingDirectory: '$(Build.SourcesDirectory)'
 
       - script: |
