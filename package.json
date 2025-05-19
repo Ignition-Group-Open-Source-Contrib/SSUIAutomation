@@ -4,10 +4,13 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-  "test:uat": "playwright test --project=uat",
-  "test:prod": "playwright test --project=prod",
-  "test:all": "npm run test:uat && npm run test:prod"
-},
+    "test:uat": "playwright test --project=uat",
+    "test:uat:cancel": "cross-env RUN_CANCEL=true playwright test --project=uat",
+    "test:prod": "playwright test --project=prod",
+    "test:prod:cancel": "cross-env RUN_CANCEL=true playwright test --project=prod",
+    "test:all": "npm run test:uat && npm run test:prod",
+    "test:all:cancel": "cross-env RUN_CANCEL=true playwright test"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

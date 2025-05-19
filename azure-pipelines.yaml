@@ -1,29 +1,92 @@
 resources:
 - repo: self
 
+parameters:
+- name: runCancel
+  displayName: 'Want to cancel?'
+  type: boolean
+  default: false
+- name: environment
+  displayName: 'Environment to Test'
+  type: string
+  default: 'uat'
+  values:
+    - 'uat'
+    - 'prod'
+    - 'all'
+
+variables:
+  RUN_CANCEL: ${{ lower(format('{0}', parameters.runCancel)) }}
+  SELECTED_ENVIRONMENT: ${{ parameters.environment }}
+  TEST_DATA_FILE: 'tests/temp-Deals_Banking_data.xlsx'  # Dynamic file path
+
 trigger:
-- main
+  branches:
+    include:
+    - main
 
 stages:
   - stage: RunTests
-    displayName: Run Tests on All Environments
+    displayName: Run Tests
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
     - job: RunAllTests
-      displayName: 'Run Tests in Parallel'
+      displayName: 'Execute Tests'
       strategy:
         matrix:
-          uat:
-            ENV_NAME: 'uat'
-            TEST_SCRIPT: 'test:uat'
-            ARTIFACT_NAME: 'playwright-report-uat'
-          # prod:
-          #   ENV_NAME: 'PROD'
-          #   TEST_SCRIPT: 'test:prod'
-          #   ARTIFACT_NAME: 'playwright-report-prod'
+          ${{ if eq(parameters.environment, 'all') }}:
+            all:
+              ${{ if eq(parameters.runCancel, true) }}:
+                TEST_SCRIPT: 'test:all:cancel'
+              ${{ if eq(parameters.runCancel, false) }}:
+                TEST_SCRIPT: 'test:all'
+              ARTIFACT_NAME: playwright-report-all
+          ${{ if eq(parameters.environment, 'uat') }}:
+            uat:
+              ${{ if eq(parameters.runCancel, true) }}:
+                TEST_SCRIPT: 'test:uat:cancel'
+              ${{ if eq(parameters.runCancel, false) }}:
+                TEST_SCRIPT: 'test:uat'
+              ARTIFACT_NAME: playwright-report-uat
+          ${{ if eq(parameters.environment, 'prod') }}:
+            prod:
+              ${{ if eq(parameters.runCancel, true) }}:
+                TEST_SCRIPT: 'test:prod:cancel'
+              ${{ if eq(parameters.runCancel, false) }}:
+                TEST_SCRIPT: 'test:prod'
+              ARTIFACT_NAME: playwright-report-prod
         maxParallel: 2
       steps:
+
+      # Step 1: Download environment-specific Excel file
+      - task: DownloadSecureFile@1
+        name: testDataFile
+        displayName: 'Download Test Data'
+        inputs:
+          secureFile: '${{ parameters.environment }}-Deals_Banking_data.xlsx'
+          retryCount: 2
+
+      # Step 2: Move file to correct location
+      - script: |
+          set -ex
+          mkdir -p tests
+          cp $(testDataFile.secureFilePath) $(TEST_DATA_FILE)
+          echo "File copied to $(TEST_DATA_FILE)"
+        displayName: 'Prepare Test Data'
+
+      # Step 3: Verify file exists
+      - script: |
+          set -ex
+          if [ ! -f "$(TEST_DATA_FILE)" ]; then
+            echo "##vso[task.logissue type=error]Test data file not found at $(TEST_DATA_FILE)!"
+            echo "##vso[task.logissue type=error]Original secure file path was $(testDataFile.secureFilePath)"
+            exit 1
+          fi
+          echo "Test data file verified at $(TEST_DATA_FILE)"
+        displayName: 'Verify Test Data'
+
+
       - task: NodeTool@0
         inputs:
           versionSpec: '18.x'
@@ -34,17 +97,21 @@ stages:
           npm install
           npx playwright install
           npx playwright install-deps
-        displayName: 'Install dependencies'
+        displayName: 'Install Playwright & Dependencies'
         workingDirectory: '$(Build.SourcesDirectory)'
 
+      # Step 5: Run tests
       - script: |
           set -ex
-          echo "Running tests for $(ENV_NAME) environment"
-          # echo "Using base URL: $(BASE_URL)"
+          echo "Running tests for $(SELECTED_ENVIRONMENT)"
+          echo "Using data file: $(TEST_DATA_FILE)"
           npm run $(TEST_SCRIPT) --reporter=html
-        displayName: 'Run $(ENV_NAME) Tests'
+        displayName: 'Execute Tests'
         workingDirectory: '$(Build.SourcesDirectory)'
+        env:
+          TEST_DATA_FILE: $(TEST_DATA_FILE)
 
+      # Step 6: Publish results
       - publish: $(Build.SourcesDirectory)/playwright-report
         artifact: $(ARTIFACT_NAME)
         condition: always()
