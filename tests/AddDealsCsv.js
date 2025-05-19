@@ -22,11 +22,12 @@ export class AddDealsCsv {
         this.FICADropDown = '#ficaClient';
         this.dealsData = [];
         this.error = [];
+        this.dataFilePath = process.env.TEST_DATA_FILE || 'tests/Deals&Banking_data.xlsx'; // Default fallback
 
     }
 
     async readDealsData() {
-        const filePath = path.join(process.cwd(), 'tests', 'Deals&Banking_data.xlsx');
+        const filePath = path.join(process.cwd(), this.dataFilePath);
 
         if (!fs.existsSync(filePath)) {
             throw new Error(`Excel file not found at: ${filePath}`);
@@ -43,7 +44,7 @@ export class AddDealsCsv {
     }
 
     async readBankingData() {
-        const filePath = path.join(process.cwd(), 'tests', 'Deals&Banking_data.xlsx');
+        const filePath = path.join(process.cwd(), this.dataFilePath);
 
         if (!fs.existsSync(filePath)) {
             throw new Error(`Excel file not found at: ${filePath}`);
