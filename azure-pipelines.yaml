@@ -21,7 +21,9 @@ variables:
   TEST_DATA_FILE: 'tests/temp-Deals_Banking_data.xlsx'  # Dynamic file path
 
 trigger:
-- main
+  branches:
+    include:
+    - main
 
 stages:
   - stage: RunTests
