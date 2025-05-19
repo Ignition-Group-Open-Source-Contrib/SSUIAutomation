@@ -3,13 +3,13 @@ resources:
 
 parameters:
 - name: runCancel
-  displayName: 'Run Cancel Tests?'
+  displayName: 'Want to cancel ran tests?'
   type: boolean
   default: false
 - name: environment
   displayName: 'Environment to Test'
   type: string
-  default: 'prod'
+  default: 'uat'
   values:
     - 'uat'
     - 'prod'
