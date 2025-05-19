@@ -33,17 +33,26 @@ stages:
       strategy:
         matrix:
           ${{ if eq(parameters.environment, 'all') }}:
-          all:
-            TEST_SCRIPT: ${{ if and(parameters.runCancel, eq(parameters.environment, 'all')) }}test:all:cancel${{ else }}test:all${{ endif }}
-            ARTIFACT_NAME: playwright-report-all
+            all:
+              ${{ if eq(parameters.runCancel, true) }}:
+                TEST_SCRIPT: 'test:all:cancel'
+              ${{ if eq(parameters.runCancel, false) }}:
+                TEST_SCRIPT: 'test:all'
+              ARTIFACT_NAME: playwright-report-all
           ${{ if eq(parameters.environment, 'uat') }}:
-          uat:
-            TEST_SCRIPT: ${{ if and(parameters.runCancel, eq(parameters.environment, 'uat')) }}test:uat:cancel${{ else }}test:uat${{ endif }}
-            ARTIFACT_NAME: playwright-report-uat
+            uat:
+              ${{ if eq(parameters.runCancel, true) }}:
+                TEST_SCRIPT: 'test:uat:cancel'
+              ${{ if eq(parameters.runCancel, false) }}:
+                TEST_SCRIPT: 'test:uat'
+              ARTIFACT_NAME: playwright-report-uat
           ${{ if eq(parameters.environment, 'prod') }}:
-          prod:
-            TEST_SCRIPT: ${{ if and(parameters.runCancel, eq(parameters.environment, 'prod')) }}test:prod:cancel${{ else }}test:prod${{ endif }}
-            ARTIFACT_NAME: playwright-report-prod
+            prod:
+              ${{ if eq(parameters.runCancel, true) }}:
+                TEST_SCRIPT: 'test:prod:cancel'
+              ${{ if eq(parameters.runCancel, false) }}:
+                TEST_SCRIPT: 'test:prod'
+              ARTIFACT_NAME: playwright-report-prod
         maxParallel: 2
       steps:
       - task: NodeTool@0
@@ -61,10 +70,9 @@ stages:
 
       - script: |
           set -ex
-          echo "Running tests for $(ENV_NAME) environment"
-          # echo "Using base URL: $(BASE_URL)"
+          echo "Running tests for $(SELECTED_ENVIRONMENT) environment"
           npm run $(TEST_SCRIPT) --reporter=html
-        displayName: 'Run $(ENV_NAME) Tests'
+        displayName: 'Run $(SELECTED_ENVIRONMENT) Tests'
         workingDirectory: '$(Build.SourcesDirectory)'
 
       - publish: $(Build.SourcesDirectory)/playwright-report
