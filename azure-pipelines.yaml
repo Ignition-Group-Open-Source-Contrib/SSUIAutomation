@@ -18,7 +18,7 @@ parameters:
 variables:
   RUN_CANCEL: ${{ lower(format('{0}', parameters.runCancel)) }}
   SELECTED_ENVIRONMENT: ${{ parameters.environment }}
-  TEST_DATA_FILE: 'tests/temp-Deals&Banking_data.xlsx'  # Dynamic file path
+  TEST_DATA_FILE: 'tests/temp-Deals_Banking_data.xlsx'  # Dynamic file path
 
 trigger:
 - main
@@ -58,25 +58,27 @@ stages:
       steps:
 
       # Step 1: Download environment-specific Excel file
-      - download: current
-        artifact: '${{ parameters.environment }}-Deals&Banking_data.xlsx'
-        patterns: '**/*.xlsx'
+      - task: DownloadSecureFile@1
+        name: testDataFile
         displayName: 'Download Test Data'
-        condition: succeeded()
+        inputs:
+          secureFile: '${{ parameters.environment }}-Deals_Banking_data.xlsx'
+          retryCount: 2
 
       # Step 2: Move file to correct location
       - script: |
           set -ex
           mkdir -p tests
-          mv '${{ parameters.environment }}-Deals&Banking_data.xlsx' $(TEST_DATA_FILE)
-          echo "File moved to $(TEST_DATA_FILE)"
+          cp $(testDataFile.secureFilePath) $(TEST_DATA_FILE)
+          echo "File copied to $(TEST_DATA_FILE)"
         displayName: 'Prepare Test Data'
 
       # Step 3: Verify file exists
       - script: |
           set -ex
           if [ ! -f "$(TEST_DATA_FILE)" ]; then
-            echo "##vso[task.logissue type=error]Test data file not found!"
+            echo "##vso[task.logissue type=error]Test data file not found at $(TEST_DATA_FILE)!"
+            echo "##vso[task.logissue type=error]Original secure file path was $(testDataFile.secureFilePath)"
             exit 1
           fi
           echo "Test data file verified at $(TEST_DATA_FILE)"
